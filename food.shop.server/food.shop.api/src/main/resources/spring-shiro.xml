@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+
+	<!-- ShiroFilterFactoryBean -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- SecurityManager -->
+		<property name="securityManager" ref="securityManager" />
+		<!-- 登录界面入口 -->
+		<property name="loginUrl" value="/user/login.do" />
+		<!-- 登录成功后系统入口界面 -->
+		<property name="successUrl" value="/user/login.do" />
+		<!-- 没有权限的跳转页面 -->
+		<property name="unauthorizedUrl" value="/user/refuse.do" />
+		<!-- Shiro过滤器链定义 -->
+		<property name="filterChainDefinitions">
+			<value>
+				/user/login.do=cros,session,authc
+				/user/logout.do=cros,session,logout
+				/**=cros,session
+			</value>
+		</property>
+	</bean>
+	
+	<!-- 登录过滤器 -->
+	<bean id="authc" class="com.cherry.framework.shiro.filter.CaptchaAuthenticationFilter">
+		<!-- 登录失败的请求参数 -->
+		<property name="failureKeyAttribute" value="shiroLoginFailure" />
+		<!-- 客户端提交的用户名的参数名 -->
+		<property name="usernameParam" value="username" />
+		<!-- 客户端提交的密码的参数名 -->
+		<property name="passwordParam" value="password" />
+		<!-- 客户端提交的记住我的参数名 -->
+		<property name="rememberMeParam" value="rememberMe" />
+	</bean>
+	
+	<!-- 注销过滤器 -->
+	<bean id="logout" class="com.cherry.framework.shiro.filter.MyLogoutFilter">
+	</bean>
+	
+	<!-- 跨域拦截器 -->
+	<bean id="cros" class="com.cherry.framework.shiro.filter.CrosFilter">
+		<property name="exposeHeaders" value="session,clear-session,remember-me,clear-remember" />
+		<property name="allowHeaders" value="session,remember-me" />
+	</bean>
+	
+	<!-- 会话拦截器 -->
+	<bean id="session" class="com.cherry.framework.shiro.filter.SessionFilter"></bean>
+	
+	<!-- CacheService -->	
+	<bean id="cacheService" class="com.cherry.framework.shiro.cache.impl.EhCacheFactoryBean" />
+	
+	<!-- Shiro EhCacheManager -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager" depends-on="cacheService">
+		<property name="cacheManager" value="#{cacheService.cacheManager}" />
+	</bean>
+	
+	<!-- DefaultWebSecurityManager -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<!-- 自定义Realm -->
+		<property name="realm" ref="jdbcRealm" />
+		<!-- 缓存管理器 -->
+		<property name="cacheManager" ref="cacheManager" />
+		<!-- 会话管理器 -->
+		<property name="sessionManager" ref="sessionManager" />
+		<!-- 记住我管理器 -->
+		<property name="rememberMeManager" ref="rememberMeManager" />
+	</bean>
+	
+	<!-- 记住我管理器 -->
+	<bean id="rememberMeManager" class="com.cherry.framework.shiro.session.WebAppRememberMeManager">
+	</bean>
+	
+	<!-- 会话管理器 -->
+	<bean id="sessionManager" class="com.cherry.framework.shiro.session.WebAppSessionManager">
+		<!-- 缓存管理器 -->
+		<property name="cacheManager" ref="cacheManager" />
+		<!-- 自动删除过期会话 -->
+		<property name="deleteInvalidSessions" value="true" />
+		<!-- 全局会话超时时间 -->
+		<property name="globalSessionTimeout" value="${shiro.session.globalSessionTimeout}" />
+		<!-- 会话存储DAO -->
+		<property name="sessionDAO" ref="sessionDAO" />
+	</bean>
+	
+	<!-- 会话存储DAO -->
+	<bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO"></bean>
+	
+	<!-- 自定义Realm -->
+	<bean id="jdbcRealm" class="com.cherry.framework.shiro.realm.ApiRealm">
+		<!-- 系统用户Service实例 -->
+		<property name="userService" ref="userServiceImpl" />
+		<!-- 凭证匹配器 -->
+		<property name="credentialsMatcher" ref="credentialsMatcher" />
+	</bean>
+	
+	<!-- 凭证匹配器 -->
+	<bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+		<!-- 哈希算法 -->
+		<property name="hashAlgorithmName" value="${shiro.hash.algorithmName}" />
+		<!-- 加密次数 -->
+		<property name="hashIterations" value="${shiro.hash.iterations}" />
+		<property name="storedCredentialsHexEncoded" value="true" />
+	</bean>
+	
+	<!-- 自动代理 -->
+	<aop:config proxy-target-class="true" />
+
+	<!-- Shiro授权注解通知 -->
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+	</bean>
+	
+</beans>

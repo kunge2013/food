@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	 				    http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/mvc 
+						http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+						http://www.springframework.org/schema/util 
+						http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+	<!-- MVC注解驱动 -->
+	<mvc:annotation-driven conversion-service="conversionService" validator="validator" />
+	
+	<!-- Spring MVC集成参数验证器 -->
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+	</bean>
+
+	<!-- 类型转换服务 -->
+	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+		<property name="converters">
+			<bean class="com.cherry.framework.web.convertor.StringToDateConvertor">
+				<property name="patterns">
+					<list>
+						<value>yyyy-MM-dd</value>
+						<value>yyyy-MM-dd HH:mm:ss</value>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- 请求映射器 -->
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+	</bean>
+	
+	<!-- 拦截器列表 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<!-- 参数拦截器 -->
+			<bean class="com.cherry.framework.web.interceptor.ParametersInterceptor">
+				<property name="urlPath" value="${parametersInterceptor.urlPath}" />
+				<property name="title" value="${parametersInterceptor.title}" />
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 处理器适配器 -->
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<!-- JSON转换器 -->
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>application/json;charset=UTF-8</value>
+						</list>
+					</property>
+					<property name="objectMapper" ref="objectMapper" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 视图解析器 -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">  
+        <property name="viewResolvers"> 
+            <list>
+                <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+                    <property name="prefix" value="/WEB-INF/jsp/"></property>
+                    <property name="suffix" value=".jsp"></property>
+                </bean>
+            </list>  
+        </property>  
+        <property name="defaultViews">  
+            <list>
+                <bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+                    <property name="prettyPrint" value="true"/>  
+                    <property name="contentType" value="application/json;charset=UTF-8"/> 
+                    <property name="objectMapper" ref="objectMapper" />
+                </bean>  
+            </list>  
+        </property>  
+    </bean>
+    
+	<!-- Jackson Object Mapper -->
+	<bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">  
+	    <property name="timeZone">  
+	        <bean class="java.util.TimeZone" factory-method="getDefault"></bean>
+	    </property>
+	</bean>
+	
+	<!-- i18n解析器 -->
+	<bean class="org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver">
+		<property name="defaultLocale" value="zh_CN" />
+	</bean>
+	
+	<!-- 国际化资源管理器 -->
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>classpath:i18n/system</value>
+			</list>
+		</property>
+		<!-- 重新加载国际化资源的时间间隔 -->
+		<property name="cacheSeconds" value="60" />
+		<!-- 使用code作为默认消息 -->
+		<property name="useCodeAsDefaultMessage" value="true" />
+	</bean>
+	
+	<!-- 文件上传解析器 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 请求编码模式 -->
+		<property name="defaultEncoding" value="UTF-8" />
+		<!-- 允许上传的所有文件的最大大小，单位为字节，-1表示没有限制 -->
+		<property name="maxUploadSize" value="-1" />
+		<!-- 允许上传的每个文件的最大大小，单位为字节，-1表示没有限制 -->
+		<property name="maxUploadSizePerFile" value="-1" />
+		<!-- 最大内存大小，单位为字节 -->
+		<property name="maxInMemorySize" value="10240" />
+		<!-- 是否保留客户端的真实文件名 -->
+		<property name="preserveFilename" value="true" />
+		<!-- 是否在访问文件时才解析multipart -->
+		<property name="resolveLazily" value="false" />
+		<!-- 文件上传的临时目录 
+		<property name="uploadTempDir" value="file:/d:temp"></property>-->
+	</bean>
+	
+	<!-- 简单的异常处理
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="org.apache.shiro.authz.UnauthorizedException">security/refuse</prop>
+			</props>
+		</property>
+	</bean> -->
+	<bean class="com.cherry.framework.web.DefaultExceptionHandler"></bean>
+	
+</beans>

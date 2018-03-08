@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 组件扫描 -->
+	<context:component-scan base-package="com.cherry" />
+	
+	<!-- 引入外置配置文件 -->
+	<context:property-placeholder location="classpath:config.properties" />
+	
+	<!-- 导入Shiro相关配置 -->
+	<import resource="classpath:spring-shiro.xml" />
+	<!-- 导入Spring MVC相关配置 -->
+	<import resource="classpath:spring-mvc.xml" />
+	<!-- 导入MyBatis相关配置 -->
+	<import resource="classpath:spring-mybatis.xml"/>
+	<!-- 导入Email相关配置
+	<import resource="classpath:spring-email.xml"/> -->
+	<!-- 导入Task相关配置
+	<import resource="classpath:spring-task.xml"/> -->
+	
+	<!-- Spring IoC辅助类 -->
+	<bean class="com.cherry.framework.utils.SpringIoC" />
+	
+	<!-- 本地文件服务 -->
+	<bean class="com.cherry.framework.service.impl.LocalFileServiceImpl">
+		<property name="fileServerSavepath" value="${file_server_savepath}" />
+		<property name="fileServerHttppath" value="${file_server_httppath}" />
+	</bean>
+	
+</beans>

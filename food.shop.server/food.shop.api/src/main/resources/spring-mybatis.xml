@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<!-- Data Source -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!-- 基本属性 url、user、password -->
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+
+		<!-- 初始化连接大小 -->
+		<property name="initialSize" value="${jdbc.initialSize}" />
+		<!-- 连接池最大使用连接数量 -->
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<!-- 连接池最大空闲 
+		<property name="maxIdle" value="${jdbc.maxIdle}" />-->
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle" value="${jdbc.minIdle}" />
+
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait" value="60000" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="stat" />
+	</bean>
+
+	<!-- 事务切面 -->
+	<aop:config>
+		<aop:pointcut id="serviceOperation" expression="${tx.expr}" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />
+	</aop:config>
+	
+	<!-- 事务通知 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="load*" read-only="true" />
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="list*" read-only="true" />
+			<tx:method name="count*" read-only="true" />
+			<tx:method name="select*" read-only="true" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 事务管理器 -->
+	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- SqlSessionFactoryBean -->
+	<bean id="sqlSession" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
+		<!-- 数据源 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 别名包 -->
+		<property name="typeAliasesPackage" value="${mybaits.typeAliasesPackage}" />
+		<!-- Mapper文件路径 -->
+		<property name="mapperLocations">
+			<list>
+				<value>${mybaits.mapperXml}</value>
+			</list>
+		</property>
+		<!-- MyBatis配置 -->
+		<property name="configuration">
+			<bean class="com.baomidou.mybatisplus.MybatisConfiguration">
+				<!-- MyBatis日志实现 -->
+				<property name="logImpl" value="org.apache.ibatis.logging.slf4j.Slf4jImpl" />
+				<!-- 映射下划线命名为驼峰命名 -->
+				<property name="mapUnderscoreToCamelCase" value="true" />
+			</bean>
+		</property>
+		<!-- 插件列表 -->
+		<property name="plugins">
+			<array>
+				<!-- 分页插件 -->
+				<bean class="com.baomidou.mybatisplus.plugins.PaginationInterceptor" />
+			</array>
+		</property>
+		<!-- 全局配置 -->
+		<property name="globalConfig" ref="globalConfig" />
+	</bean>
+	
+	<!-- 全局配置 -->
+	<bean id="globalConfig" class="com.baomidou.mybatisplus.entity.GlobalConfiguration">
+		<!-- 全局ID类型： 0, "数据库ID自增"， 1, "用户输入ID", 2, "全局唯一ID", 3, "全局唯一UUID"-->
+		<property name="idType" value="${mybaits.idType}" />
+		<!-- 全局表为下划线命名设置 true -->
+		<property name="dbColumnUnderline" value="true" />
+	</bean>
+	
+	<!-- Mapper扫描配置器-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSession" />
+		<property name="basePackage" value="com.cherry.shop.*.mapper" />
+	</bean> 
+
+</beans>

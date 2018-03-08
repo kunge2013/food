@@ -1,0 +1,95 @@
+body {
+	margin: 0px;
+}
+aside.sysmenu-aside {
+	overflow: hidden;
+	height: 100%;
+	background-color: #545c64;
+}
+/*aside.sysmenu-aside::-webkit-scrollbar{
+  display:none;
+}*/
+.menu-wrap{
+    width: 230px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.admin-header {
+	background-color: #23262E;
+}
+.admin-logo {
+	position: absolute;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100%;
+    line-height: 60px;
+    text-align: center;
+    color: #009688;
+    font-size: 16px;
+}
+.admin-header-menu {
+	position: absolute!important;
+  		right: 20px;
+   	top: 0px;
+   	width: 200px;
+    height: 100%;
+    line-height: 60px;
+    text-align: right;
+    font-size: 16px;
+}
+.admin-header-menu .el-dropdown {
+	color: rgba(255,255,255,.7);
+}
+aside.sysmenu-aside ul.el-menu {
+	width: 200px;
+}
+.sys-tab, .sys-tab .el-tabs__content, .sys-tab .el-tabs__content .el-tab-pane, .sys-tab-iframe {
+	height: 100%;
+	width: 100%;
+}
+.sys-tab-iframe {
+	border-width: 0px;
+   /*  border-style: inset;
+   border-color: initial;
+   border-image: initial; */
+}
+
+/* 上传组件样式 */
+.avatar-uploader .el-upload {
+	border: 1px dashed #d9d9d9;
+	border-radius: 6px;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+}
+
+.avatar-uploader .el-upload:hover {
+	border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+	font-size: 28px;
+	color: #8c939d;
+	width: 178px;
+	height: 178px;
+	line-height: 178px;
+	text-align: center;
+}
+
+.avatar {
+	width: 178px;
+	height: 178px;
+	display: block;
+}
+
+.el-select .el-input, .el-select .el-input--suffix {
+	/* 去掉下拉框多余的外部白 */
+	margin-right: -15px;
+}
+
+[class*=icon-]+span {
+	/* 阿里扩展图标偏移 */
+	margin-left: 5px;
+}

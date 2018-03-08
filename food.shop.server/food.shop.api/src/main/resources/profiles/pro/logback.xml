@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+	<!-- 属性定义 -->
+	<property name="project_name" value="family" />
+	
+	<!-- 上下文名称 -->
+	<contextName>${project_name}</contextName>
+	
+	<!-- 日志输出源，输出日志到文件，不满足某个条件时将日志输出到另一个文件 -->
+	<appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 日志文件名 -->
+		<file>logs/${project_name}.log</file>
+		<!-- 追加日志到文件末尾 -->
+		<append>true</append>
+		<!-- 滚动策略 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>logs/${project_name}.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>6</maxHistory>
+		</rollingPolicy>
+		<!-- 触发策略 -->
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>100MB</maxFileSize>
+		</triggeringPolicy>
+		<!-- 日志格式化器 -->
+		<encoder>
+			<!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- 根日志输出器：级别TRACE、DEBUG、INFO、WARN、ERROR、ALL、OFF -->
+	<root level="ERROR">
+		<appender-ref ref="ROLLING_FILE" />
+	</root>
+
+</configuration>
